@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线问诊-原始版</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 18px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      height: 80px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 30px;
+      background: #1890ff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .tip {
+      color: #999;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>在线问诊</h1>
+  <form>
+    <label>就诊人姓名
+      <input type="text" required>
+    </label>
+    <label>身份证号
+      <input type="text" required>
+    </label>
+    <label>手机号
+      <input type="text" required>
+    </label>
+    <label>年龄
+      <input type="number" required>
+    </label>
+    <label>性别
+      <select>
+        <option>男</option>
+        <option>女</option>
+      </select>
+    </label>
+    <label>选择科室
+      <select>
+        <option>内科</option>
+        <option>外科</option>
+        <option>妇科</option>
+        <option>儿科</option>
+        <option>皮肤科</option>
+        <option>眼科</option>
+        <option>耳鼻喉科</option>
+        <option>口腔科</option>
+        <option>骨科</option>
+        <option>心理科</option>
+      </select>
+    </label>
+    <label>选择医生
+      <select>
+        <option>张医生 主任医师 ¥200</option>
+        <option>李医生 副主任医师 ¥150</option>
+        <option>王医生 主治医师 ¥80</option>
+      </select>
+    </label>
+    <label>病情描述
+      <textarea placeholder="请详细描述您的症状"></textarea>
+    </label>
+    <label>上传病历或检查报告
+      <input type="file">
+    </label>
+    <label>
+      <input type="checkbox"> 我已阅读并同意《在线问诊服务协议》《隐私政策》《知情同意书》
+    </label>
+    <button type="submit">提交并支付</button>
+  </form>
+</body>
+</html>

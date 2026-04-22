@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线问诊发起流程改造</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --bg-soft: #fbf8f3;
+      --card: rgba(255, 255, 255, 0.84);
+      --card-strong: #fffdf8;
+      --text: #1f2a2e;
+      --muted: #5f6d71;
+      --line: rgba(31, 42, 46, 0.1);
+      --brand: #126a72;
+      --brand-soft: #dff3f2;
+      --accent: #ef8d54;
+      --accent-soft: #fff0e5;
+      --success: #21845c;
+      --shadow: 0 18px 45px rgba(28, 42, 46, 0.12);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(239, 141, 84, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(18, 106, 114, 0.16), transparent 24%),
+        linear-gradient(180deg, #f7f1e8 0%, #f4efe7 100%);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.25fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 26px;
+    }
+
+    .hero-card,
+    .summary,
+    .panel,
+    .doctor-card,
+    .timeline-card,
+    .toast {
+      backdrop-filter: blur(16px);
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-lg);
+    }
+
+    .hero-card {
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      bottom: -90px;
+      width: 240px;
+      height: 240px;
+      background: radial-gradient(circle, rgba(18, 106, 114, 0.22) 0%, rgba(18, 106, 114, 0) 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--brand);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-copy {
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .pain-points,
+    .quick-notes,
+    .meta-list,
+    .chip-row,
+    .tag-list,
+    .doctor-tags,
+    .timeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pain-points span,
+    .chip,
+    .tag,
+    .doctor-tags span,
+    .status-pill {
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .pain-points span {
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid rgba(31, 42, 46, 0.08);
+    }
+
+    .summary {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .summary h2,
+    .panel h2,
+    .panel h3,
+    .doctor-card h3,
+    .timeline-card h3 {
+      margin: 0;
+    }
+
+    .summary h2 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .summary p,
+    .helper,
+    .field-help,
+    .doctor-meta,
+    .timeline-card p,
+    .muted {
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    .summary-number {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--brand);
+      line-height: 1;
+    }
+
+    .quick-notes .note {
+      flex: 1 1 120px;
+      background: var(--bg-soft);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      border: 1px solid rgba(18, 106, 114, 0.08);
+    }
+
+    .quick-notes strong {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.78fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 28px;
+    }
+
+    .progress-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(18, 106, 114, 0.1);
+      overflow: hidden;
+      margin-top: 12px;
+    }
+
+    .progress-bar {
+      width: 25%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand) 0%, #4b9da3 100%);
+      border-radius: inherit;
+      transition: width 0.28s ease;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .step {
+      border-radius: var(--radius-md);
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.58);
+      border: 1px solid transparent;
+      min-height: 76px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .step.active {
+      border-color: rgba(18, 106, 114, 0.26);
+      background: linear-gradient(180deg, rgba(223, 243, 242, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
+    }
+
+    .step.done {
+      background: linear-gradient(180deg, rgba(227, 243, 233, 0.95) 0%, rgba(255, 255, 255, 0.95) 100%);
+    }
+
+    .step-index {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      background: rgba(18, 106, 114, 0.12);
+      color: var(--brand);
+    }
+
+    .step.done .step-index {
+      background: rgba(33, 132, 92, 0.14);
+      color: var(--success);
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .step-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .stage {
+      display: none;
+    }
+
+    .stage.active {
+      display: block;
+    }
+
+    .stage-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .stage-head h2 {
+      font-size: 26px;
+      margin-bottom: 6px;
+    }
+
+    .status-pill {
+      background: var(--accent-soft);
+      color: #9b521c;
+      align-self: center;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .field,
+    .info-card,
+    .recommendation,
+    .action-banner {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(31, 42, 46, 0.08);
+      border-radius: var(--radius-md);
+      padding: 16px;
+    }
+
+    .field.full,
+    .info-card.full,
+    .recommendation.full,
+    .action-banner.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    input,
+    select,
+    textarea,
+    .fake-upload {
+      width: 100%;
+      border: 1px solid rgba(31, 42, 46, 0.12);
+      background: #fffefb;
+      border-radius: 12px;
+      padding: 13px 14px;
+      font: inherit;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: 2px solid rgba(18, 106, 114, 0.18);
+      border-color: rgba(18, 106, 114, 0.3);
+    }
+
+    .field-help {
+      margin-top: 8px;
+      font-size: 12px;
+    }
+
+    .chip {
+      border: 1px solid rgba(18, 106, 114, 0.14);
+      background: #fff;
+      color: var(--text);
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .chip:hover,
+    .chip.active {
+      background: var(--brand-soft);
+      color: var(--brand);
+      border-color: rgba(18, 106, 114, 0.22);
+    }
+
+    .info-card {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .info-card strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .cta-inline {
+      border: none;
+      background: var(--brand-soft);
+      color: var(--brand);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .recommendation {
+      background: linear-gradient(180deg, rgba(223, 243, 242, 0.96) 0%, rgba(255, 255, 255, 0.92) 100%);
+    }
+
+    .recommendation strong {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .doctor-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .doctor-card {
+      padding: 18px;
+      border: 1px solid rgba(31, 42, 46, 0.08);
+      transition: 0.2s ease;
+      cursor: pointer;
+    }
+
+    .doctor-card.selected {
+      border-color: rgba(18, 106, 114, 0.28);
+      box-shadow: 0 18px 38px rgba(18, 106, 114, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .doctor-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .doctor-price {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--brand);
+      white-space: nowrap;
+    }
+
+    .doctor-tags span,
+    .tag {
+      background: rgba(18, 106, 114, 0.09);
+      color: var(--brand);
+    }
+
+    .tag.warn {
+      background: rgba(239, 141, 84, 0.14);
+      color: #9b521c;
+    }
+
+    .tag.success {
+      background: rgba(33, 132, 92, 0.12);
+      color: var(--success);
+    }
+
+    .fake-upload {
+      border-style: dashed;
+      background: linear-gradient(180deg, rgba(251, 248, 243, 0.95) 0%, rgba(255, 255, 255, 1) 100%);
+      text-align: center;
+      padding: 24px 16px;
+    }
+
+    .fake-upload strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    .file-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .file-pill {
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(31, 42, 46, 0.08);
+      font-size: 13px;
+    }
+
+    .action-banner {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      background: linear-gradient(180deg, rgba(255, 240, 229, 0.92) 0%, rgba(255, 255, 255, 0.96) 100%);
+    }
+
+    .action-banner strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 18px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .checkbox-row input {
+      width: auto;
+      margin-top: 3px;
+    }
+
+    .footer-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-top: 26px;
+      flex-wrap: wrap;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 13px 20px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--brand) 0%, #2f828a 100%);
+      color: #fff;
+      box-shadow: 0 14px 24px rgba(18, 106, 114, 0.24);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(31, 42, 46, 0.1);
+      color: var(--text);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--brand);
+    }
+
+    .aside-stack {
+      display: grid;
+      gap: 18px;
+      position: sticky;
+      top: 20px;
+    }
+
+    .timeline-card {
+      padding: 22px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .timeline-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(18, 106, 114, 0.12);
+      color: var(--brand);
+      font-weight: 800;
+    }
+
+    .meta-list {
+      margin-top: 14px;
+    }
+
+    .meta-card {
+      flex: 1 1 120px;
+      min-width: 0;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(31, 42, 46, 0.08);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .meta-card strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .callout {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(180deg, rgba(223, 243, 242, 0.96) 0%, rgba(255, 255, 255, 0.96) 100%);
+      border: 1px solid rgba(18, 106, 114, 0.08);
+    }
+
+    .callout + .callout {
+      margin-top: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      padding: 16px 18px;
+      max-width: 320px;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: 0.25s ease;
+      z-index: 10;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .aside-stack {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        padding: 24px 14px 40px;
+      }
+
+      .hero-card,
+      .summary,
+      .panel,
+      .timeline-card {
+        padding: 20px;
+      }
+
+      .steps,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stage-head,
+      .action-banner,
+      .info-card,
+      .progress-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .doctor-top {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="hero-card">
+        <div class="eyebrow">在线问诊发起流程改造原型</div>
+        <h1>把一页填完的负担，改成更清晰、更放心的问诊流程</h1>
+        <p class="hero-copy">
+          这个版本把原本堆在一页里的 11 个字段，改造成 4 步流程：先确认就诊信息，再做分诊建议，再选医生并补充资料，最后确认支付与服务预期。页面里同时补上了进度、异常兜底、自动带出和支付后说明。
+        </p>
+        <div class="pain-points">
+          <span>还要填多久</span>
+          <span>该挂哪个科</span>
+          <span>填错能否返回</span>
+          <span>支付后多久回复</span>
+        </div>
+      </div>
+
+      <aside class="summary">
+        <div>
+          <h2>本次改造抓手</h2>
+          <p>围绕题目给出的 5 类用户抱怨，优先提升流程确定性、降低信息输入成本，并在医疗场景里补强隐私与预期管理。</p>
+        </div>
+        <div class="quick-notes">
+          <div class="note">
+            <strong>4 步</strong>
+            <span class="muted">拆分长表单，降低压迫感</span>
+          </div>
+          <div class="note">
+            <strong>1 分钟</strong>
+            <span class="muted">顶部显示预计完成时长</span>
+          </div>
+          <div class="note">
+            <strong>可回退</strong>
+            <span class="muted">支持保存草稿与返回修改</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="workspace">
+      <main class="panel">
+        <div class="progress-top">
+          <div>
+            <div class="eyebrow">当前进度</div>
+            <h2 id="progressTitle" style="margin: 10px 0 0;">第 1 步 / 共 4 步</h2>
+            <p class="helper" id="progressHint">预计还需 1 分钟完成，支持随时保存草稿。</p>
+          </div>
+          <div style="min-width: 180px; width: 32%;">
+            <div class="muted" style="text-align: right;">完成度 <span id="progressPercent">25%</span></div>
+            <div class="progress-track">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="steps" id="steps">
+          <div class="step active" data-step="0">
+            <div class="step-index">1</div>
+            <div class="step-title">就诊信息</div>
+            <div class="step-desc">自动带出基础身份信息，减少重复输入</div>
+          </div>
+          <div class="step" data-step="1">
+            <div class="step-index">2</div>
+            <div class="step-title">症状与分诊</div>
+            <div class="step-desc">根据症状给出科室建议和适用提醒</div>
+          </div>
+          <div class="step" data-step="2">
+            <div class="step-index">3</div>
+            <div class="step-title">医生与资料</div>
+            <div class="step-desc">对比响应速度、擅长方向和价格</div>
+          </div>
+          <div class="step" data-step="3">
+            <div class="step-index">4</div>
+            <div class="step-title">确认支付</div>
+            <div class="step-desc">明确支付后流程、时效和异常处理</div>
+          </div>
+        </div>
+
+        <section class="stage active" data-stage="0">
+          <div class="stage-head">
+            <div>
+              <h2>先确认谁来问诊</h2>
+              <p class="helper">基础身份信息优先自动带出，只保留用户确认与补充。</p>
+            </div>
+            <div class="status-pill">自动带出 4 项信息</div>
+          </div>
+
+          <div class="grid">
+            <div class="info-card full">
+              <div>
+                <strong>已有历史就诊档案</strong>
+                <p class="helper">可一键带出姓名、身份证后四位、手机号和常用联系人，减少重复填写。</p>
+              </div>
+              <button class="cta-inline" id="autofillBtn" type="button">一键带出</button>
+            </div>
+
+            <div class="field">
+              <label for="name">就诊人姓名</label>
+              <input id="name" type="text" value="" placeholder="请输入真实姓名">
+              <div class="field-help">用于医生确认问诊主体，支持本人/家属代问诊。</div>
+            </div>
+
+            <div class="field">
+              <label for="phone">手机号</label>
+              <input id="phone" type="tel" value="" placeholder="用于接收通知提醒">
+              <div class="field-help">订单动态、医生回复、补充资料提醒都会发到这里。</div>
+            </div>
+
+            <div class="field">
+              <label for="idNo">身份证号</label>
+              <input id="idNo" type="text" value="" placeholder="用于实名问诊与处方合规">
+              <div class="field-help">展示建议脱敏，非必要不全量暴露。</div>
+            </div>
+
+            <div class="field">
+              <label for="age">年龄</label>
+              <input id="age" type="number" min="0" max="120" placeholder="如 29">
+              <div class="field-help">年龄会影响推荐科室和医生分组。</div>
+            </div>
+
+            <div class="field">
+              <label for="gender">性别</label>
+              <select id="gender">
+                <option value="">请选择</option>
+                <option>男</option>
+                <option>女</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="relation">问诊关系</label>
+              <select id="relation">
+                <option>本人问诊</option>
+                <option>为家人代问诊</option>
+                <option>为儿童代问诊</option>
+              </select>
+            </div>
+
+            <div class="action-banner full">
+              <div>
+                <strong>为什么第一步先只做身份确认？</strong>
+                <p class="helper">避免用户一开始就被完整表单压住，让用户先进入流程，再逐步完成更复杂的信息输入。</p>
+              </div>
+              <span class="tag success">降低首屏流失</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="stage" data-stage="1">
+          <div class="stage-head">
+            <div>
+              <h2>根据症状做分诊建议</h2>
+              <p class="helper">让用户先描述问题，再由系统给出建议科室，而不是直接丢给用户一个十选一列表。</p>
+            </div>
+            <div class="status-pill">关键决策点辅助</div>
+          </div>
+
+          <div class="grid">
+            <div class="field full">
+              <label>常见症状</label>
+              <div class="chip-row" id="symptomChips">
+                <button class="chip active" type="button" data-department="呼吸内科">发热咳嗽</button>
+                <button class="chip" type="button" data-department="皮肤科">皮疹瘙痒</button>
+                <button class="chip" type="button" data-department="耳鼻喉科">咽痛鼻塞</button>
+                <button class="chip" type="button" data-department="骨科">腰腿疼痛</button>
+                <button class="chip" type="button" data-department="心理科">睡眠焦虑</button>
+                <button class="chip" type="button" data-department="妇科">月经异常</button>
+              </div>
+              <div class="field-help">可多选；这是辅助建议，不替代医生诊断。</div>
+            </div>
+
+            <div class="recommendation full" id="recommendationBox">
+              <strong>推荐科室：呼吸内科</strong>
+              <p class="helper">依据你当前勾选的症状，建议优先选择呼吸内科。如果伴随高热超过 39°C、呼吸困难或胸痛，请直接线下急诊。</p>
+              <div class="tag-list" style="margin-top: 12px;">
+                <span class="tag">建议优先级高</span>
+                <span class="tag warn">出现危急症状请线下就医</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="department">确认科室</label>
+              <select id="department">
+                <option>呼吸内科</option>
+                <option>皮肤科</option>
+                <option>耳鼻喉科</option>
+                <option>骨科</option>
+                <option>心理科</option>
+                <option>妇科</option>
+                <option>儿科</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="urgency">病情紧急程度</label>
+              <select id="urgency">
+                <option>普通咨询，24 小时内回复即可</option>
+                <option>希望尽快处理，优先 2 小时内回复</option>
+                <option>若出现加重我会线下就医</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="description">病情描述</label>
+              <textarea id="description" placeholder="请描述症状持续多久、是否发热、是否用过药、是否有既往病史。">咳嗽 3 天，昨晚开始低烧 37.8°C，伴有咽痛和鼻塞，暂未自行服药。</textarea>
+              <div class="field-help">提供引导性占位文案，帮助用户写得更完整，减少医生反复追问。</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="stage" data-stage="2">
+          <div class="stage-head">
+            <div>
+              <h2>选医生并补充资料</h2>
+              <p class="helper">用对比卡片替代单个下拉框，把价格、响应速度、擅长方向和在线状态一次讲清楚。</p>
+            </div>
+            <div class="status-pill">医生选择更可解释</div>
+          </div>
+
+          <div class="grid">
+            <div class="field full">
+              <label>推荐医生</label>
+              <div class="doctor-list" id="doctorList">
+                <article class="doctor-card selected" data-doctor="陈医生">
+                  <div class="doctor-top">
+                    <div>
+                      <h3>陈医生</h3>
+                      <p class="doctor-meta">呼吸内科 主任医师 · 三甲医院 · 近 30 天好评率 98%</p>
+                    </div>
+                    <div class="doctor-price">¥199</div>
+                  </div>
+                  <div class="doctor-tags">
+                    <span>15 分钟内回复</span>
+                    <span>擅长发热/咳嗽/支气管炎</span>
+                    <span>当前在线</span>
+                  </div>
+                </article>
+
+                <article class="doctor-card" data-doctor="周医生">
+                  <div class="doctor-top">
+                    <div>
+                      <h3>周医生</h3>
+                      <p class="doctor-meta">呼吸内科 副主任医师 · 综合医院 · 近 30 天复诊率高</p>
+                    </div>
+                    <div class="doctor-price">¥129</div>
+                  </div>
+                  <div class="doctor-tags">
+                    <span>2 小时内回复</span>
+                    <span>适合常规问诊</span>
+                    <span>今晚 21:00 后在线</span>
+                  </div>
+                </article>
+
+                <article class="doctor-card" data-doctor="林医生">
+                  <div class="doctor-top">
+                    <div>
+                      <h3>林医生</h3>
+                      <p class="doctor-meta">全科 主治医师 · 互联网医院 · 首问价格更低</p>
+                    </div>
+                    <div class="doctor-price">¥79</div>
+                  </div>
+                  <div class="doctor-tags">
+                    <span>4 小时内回复</span>
+                    <span>适合轻症初筛</span>
+                    <span>不支持夜间加急</span>
+                  </div>
+                </article>
+              </div>
+            </div>
+
+            <div class="field full">
+              <label>上传病历或检查报告</label>
+              <div class="fake-upload">
+                <strong>拖拽或点击上传图片 / PDF</strong>
+                <span class="muted">示意上传区域，可支持病历、化验单、处方、过敏史资料。</span>
+                <div class="file-list">
+                  <span class="file-pill">血常规报告.pdf</span>
+                  <span class="file-pill">既往处方.jpg</span>
+                </div>
+              </div>
+              <div class="field-help">把上传动作放在医生选择之后，用户更清楚资料是给谁看、为什么要传。</div>
+            </div>
+
+            <div class="action-banner full">
+              <div>
+                <strong>如果医生不在线怎么办？</strong>
+                <p class="helper">页面会明确显示预计回复时效；若超过承诺时限未接诊，可自动退款或一键换医生。</p>
+              </div>
+              <span class="tag warn">异常路径已兜底</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="stage" data-stage="3">
+          <div class="stage-head">
+            <div>
+              <h2>确认支付与服务预期</h2>
+              <p class="helper">把支付后的流程、服务边界和隐私授权在付款前讲清楚，减少焦虑和售后疑问。</p>
+            </div>
+            <div class="status-pill">确定性与合规表达</div>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label>服务费用</label>
+              <div class="info-card">
+                <div>
+                  <strong id="selectedDoctor">陈医生 · 图文问诊</strong>
+                  <p class="helper">费用已包含本次问诊与医生首次回复。</p>
+                </div>
+                <div class="doctor-price" id="selectedPrice">¥199</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>预计服务时效</label>
+              <div class="info-card">
+                <div>
+                  <strong>15 分钟内首次回复</strong>
+                  <p class="helper">若超时未接诊，可发起自动退款或改派。</p>
+                </div>
+                <span class="tag success">超时有保障</span>
+              </div>
+            </div>
+
+            <div class="field full">
+              <label>支付后你会看到什么</label>
+              <div class="meta-list">
+                <div class="meta-card">
+                  <strong>1. 等待接诊</strong>
+                  <span class="muted">订单状态实时更新，告诉用户医生何时接单。</span>
+                </div>
+                <div class="meta-card">
+                  <strong>2. 医生回复</strong>
+                  <span class="muted">收到 App/短信通知，避免用户担心错过消息。</span>
+                </div>
+                <div class="meta-card">
+                  <strong>3. 补充资料</strong>
+                  <span class="muted">若医生需要更多信息，会给出结构化补充要求。</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field full">
+              <label>授权与协议</label>
+              <div class="checkbox-row">
+                <input id="agreement" type="checkbox" checked>
+                <div>
+                  <strong>我已阅读并同意《在线问诊服务协议》《隐私政策》《知情同意书》</strong>
+                  <p class="field-help">身份证、病情描述、病历材料仅用于本次问诊、合规存档和必要风控，不作无关用途。</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="action-banner full">
+              <div>
+                <strong>支持返回修改，不会从头再填</strong>
+                <p class="helper">支付前可回到任一步调整；草稿会保留 24 小时，避免用户因中断流失。</p>
+              </div>
+              <span class="tag">可随时回退</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="footer-actions">
+          <button class="btn-ghost" id="saveBtn" type="button">保存草稿</button>
+          <div class="button-group">
+            <button class="btn-secondary" id="prevBtn" type="button">上一步</button>
+            <button class="btn-primary" id="nextBtn" type="button">下一步</button>
+          </div>
+        </div>
+      </main>
+
+      <aside class="aside-stack">
+        <section class="timeline-card">
+          <h3>支付后流程提示</h3>
+          <p>题目里最容易被忽略的一点，是“付完钱后会发生什么”。这里用时间轴把不确定性提前说清楚。</p>
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-dot">1</div>
+              <div>
+                <strong>提交订单</strong>
+                <p class="muted">生成问诊单并进入候诊状态。</p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot">2</div>
+              <div>
+                <strong>医生接诊</strong>
+                <p class="muted">预计 15 分钟内首次回复，超时可改派或退款。</p>
+              </div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot">3</div>
+              <div>
+                <strong>获得建议</strong>
+                <p class="muted">医生给出诊疗建议，必要时建议线下就诊。</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="timeline-card">
+          <h3>面试讲解抓手</h3>
+          <div class="callout">
+            <strong>先讲问题</strong>
+            <p class="muted">原版把 11 个字段直接堆在一页，用户没有进度感，也缺少关键决策支持。</p>
+          </div>
+          <div class="callout">
+            <strong>再讲取舍</strong>
+            <p class="muted">30 分钟内不追求完整业务闭环，优先把最影响转化和体验的环节做清楚。</p>
+          </div>
+          <div class="callout">
+            <strong>最后讲延展</strong>
+            <p class="muted">如果还有时间，可以继续补充校验、真实上传、订单状态页和更细的风控策略。</p>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </div>
+
+  <div class="toast" id="toast">草稿已保存，24 小时内可继续填写。</div>
+
+  <script>
+    const steps = Array.from(document.querySelectorAll(".step"));
+    const stages = Array.from(document.querySelectorAll(".stage"));
+    const progressTitle = document.getElementById("progressTitle");
+    const progressHint = document.getElementById("progressHint");
+    const progressPercent = document.getElementById("progressPercent");
+    const progressBar = document.getElementById("progressBar");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const autofillBtn = document.getElementById("autofillBtn");
+    const toast = document.getElementById("toast");
+    const symptomChips = Array.from(document.querySelectorAll("#symptomChips .chip"));
+    const recommendationBox = document.getElementById("recommendationBox");
+    const departmentSelect = document.getElementById("department");
+    const doctorCards = Array.from(document.querySelectorAll(".doctor-card"));
+    const selectedDoctor = document.getElementById("selectedDoctor");
+    const selectedPrice = document.getElementById("selectedPrice");
+
+    const stepHints = [
+      "预计还需 1 分钟完成，支持随时保存草稿。",
+      "继续补充症状信息，系统会帮助你确定推荐科室。",
+      "对比医生价格、时效和擅长方向，避免盲选。",
+      "支付前最后确认服务时效、协议授权和异常处理。"
+    ];
+
+    const departmentAdvice = {
+      "呼吸内科": "依据你当前勾选的症状，建议优先选择呼吸内科。如果伴随高热超过 39°C、呼吸困难或胸痛，请直接线下急诊。",
+      "皮肤科": "当前症状更适合皮肤科。若出现大面积扩散、呼吸不适或过敏反应，请优先线下就医。",
+      "耳鼻喉科": "咽痛、鼻塞、耳闷等症状更匹配耳鼻喉科；若持续高热或吞咽困难，建议尽快线下检查。",
+      "骨科": "腰腿疼痛、关节不适建议优先骨科。若出现麻木、活动受限或外伤，请尽快线下处理。",
+      "心理科": "睡眠焦虑、情绪波动可先由心理科评估；若有明显自伤风险，请立刻寻求紧急帮助。",
+      "妇科": "月经异常、分泌物变化等问题建议优先妇科；若伴剧烈腹痛或大量出血，建议尽快线下急诊。"
+    };
+
+    let currentStep = 0;
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 2200);
+    }
+
+    function updateStepView(index) {
+      currentStep = index;
+      steps.forEach((step, stepIndex) => {
+        step.classList.toggle("active", stepIndex === index);
+        step.classList.toggle("done", stepIndex < index);
+      });
+
+      stages.forEach((stage, stageIndex) => {
+        stage.classList.toggle("active", stageIndex === index);
+      });
+
+      const percent = ((index + 1) / steps.length) * 100;
+      progressTitle.textContent = `第 ${index + 1} 步 / 共 4 步`;
+      progressHint.textContent = stepHints[index];
+      progressPercent.textContent = `${Math.round(percent)}%`;
+      progressBar.style.width = `${percent}%`;
+      prevBtn.disabled = index === 0;
+      prevBtn.style.opacity = index === 0 ? "0.5" : "1";
+      nextBtn.textContent = index === steps.length - 1 ? "提交并支付" : "下一步";
+    }
+
+    function updateRecommendation(department) {
+      recommendationBox.innerHTML = `
+        <strong>推荐科室：${department}</strong>
+        <p class="helper">${departmentAdvice[department] || "系统会根据症状继续辅助推荐科室。"}</p>
+        <div class="tag-list" style="margin-top: 12px;">
+          <span class="tag">建议优先级高</span>
+          <span class="tag warn">出现危急症状请线下就医</span>
+        </div>
+      `;
+      departmentSelect.value = department;
+    }
+
+    steps.forEach((step) => {
+      step.addEventListener("click", () => updateStepView(Number(step.dataset.step)));
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (currentStep > 0) {
+        updateStepView(currentStep - 1);
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (currentStep < steps.length - 1) {
+        updateStepView(currentStep + 1);
+      } else {
+        showToast("已模拟提交并支付，接下来会进入候诊状态页。");
+      }
+    });
+
+    saveBtn.addEventListener("click", () => {
+      showToast("草稿已保存，24 小时内可继续填写。");
+    });
+
+    autofillBtn.addEventListener("click", () => {
+      document.getElementById("name").value = "王小雨";
+      document.getElementById("phone").value = "138****5678";
+      document.getElementById("idNo").value = "310***********4218";
+      document.getElementById("age").value = "29";
+      document.getElementById("gender").value = "女";
+      showToast("已带出历史就诊档案，你可以继续核对或修改。");
+    });
+
+    symptomChips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        symptomChips.forEach((item) => item.classList.remove("active"));
+        chip.classList.add("active");
+        updateRecommendation(chip.dataset.department);
+      });
+    });
+
+    doctorCards.forEach((card) => {
+      card.addEventListener("click", () => {
+        doctorCards.forEach((item) => item.classList.remove("selected"));
+        card.classList.add("selected");
+        const doctorName = card.dataset.doctor;
+        const price = card.querySelector(".doctor-price").textContent;
+        selectedDoctor.textContent = `${doctorName} · 图文问诊`;
+        selectedPrice.textContent = price;
+      });
+    });
+
+    updateStepView(0);
+    updateRecommendation("呼吸内科");
+  </script>
+</body>
+</html>
