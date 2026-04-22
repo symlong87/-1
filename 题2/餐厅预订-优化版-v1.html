@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>餐厅预订优化版 v1</title>
+  <style>
+    :root {
+      --bg: #f7f3ee;
+      --paper: #fffdf9;
+      --card: #ffffff;
+      --line: #e9dfd2;
+      --line-strong: #d9c7b2;
+      --text: #2f241a;
+      --muted: #7a6a59;
+      --brand: #c65a20;
+      --brand-deep: #9d4313;
+      --brand-soft: #fff1e7;
+      --success: #2f7a4c;
+      --success-soft: #edf8f1;
+      --warn: #b46d1d;
+      --warn-soft: #fff5e5;
+      --danger: #a73e32;
+      --danger-soft: #fdeceb;
+      --shadow: 0 14px 32px rgba(74, 46, 20, 0.08);
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --sticky-height: 132px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(198, 90, 32, 0.12), transparent 28%),
+        linear-gradient(180deg, #faf6f0 0%, var(--bg) 100%);
+    }
+
+    .page {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 20px 16px calc(var(--sticky-height) + 34px);
+    }
+
+    .hero,
+    .section,
+    .sticky-bar,
+    .toast,
+    .success-card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(233, 223, 210, 0.92);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .hero-top {
+      padding: 18px 18px 14px;
+      background:
+        linear-gradient(140deg, rgba(198, 90, 32, 0.14), rgba(255, 255, 255, 0.9)),
+        linear-gradient(180deg, #fffaf4 0%, #fff 100%);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.85);
+      color: var(--brand-deep);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 12px 0 6px;
+      font-size: 26px;
+      line-height: 1.2;
+    }
+
+    .hero-subtitle,
+    .meta-row,
+    .caption,
+    .input-help,
+    .summary-note,
+    .status-text,
+    .rule-footnote,
+    .empty-text,
+    .toast p,
+    .success-card p {
+      color: var(--muted);
+    }
+
+    .hero-subtitle {
+      margin: 0;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .hero-body {
+      padding: 14px 18px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .meta-row {
+      display: grid;
+      gap: 6px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .chips,
+    .legend,
+    .summary-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip,
+    .legend span,
+    .summary-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #f8f4ef;
+      color: #58493b;
+      border: 1px solid #ede3d7;
+    }
+
+    .section {
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .section h2,
+    .section h3,
+    .group-title,
+    .summary-main strong {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .section h2 {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .section h3,
+    .group-title {
+      font-size: 15px;
+    }
+
+    .caption {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .date-grid,
+    .time-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .date-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .date-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      padding: 12px 10px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .date-card.selected {
+      border-color: rgba(198, 90, 32, 0.55);
+      background: linear-gradient(180deg, #fff8f1 0%, #ffffff 100%);
+      box-shadow: 0 10px 20px rgba(198, 90, 32, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .date-weekday {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .date-day {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .date-hint {
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .group {
+      margin-top: 14px;
+    }
+
+    .group-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 12px;
+    }
+
+    .time-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .time-slot {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      padding: 11px 12px;
+      cursor: pointer;
+      text-align: left;
+      min-height: 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .time-slot:hover {
+      transform: translateY(-1px);
+    }
+
+    .time-slot.selected {
+      border-color: rgba(198, 90, 32, 0.6);
+      background: linear-gradient(180deg, #fff8f1 0%, #ffffff 100%);
+      box-shadow: 0 10px 20px rgba(198, 90, 32, 0.12);
+    }
+
+    .time-slot.disabled {
+      background: #f6f2ed;
+      color: #b0a08d;
+      cursor: not-allowed;
+      border-style: dashed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .slot-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slot-time {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .slot-badge {
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-available {
+      background: #f4efe9;
+      color: #6f5a47;
+    }
+
+    .badge-recommended {
+      background: var(--brand-soft);
+      color: var(--brand-deep);
+    }
+
+    .badge-tight {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+
+    .badge-full {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    select,
+    input {
+      width: 100%;
+      border: 1px solid var(--line-strong);
+      border-radius: 14px;
+      padding: 14px 14px;
+      font-size: 15px;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: rgba(198, 90, 32, 0.55);
+      box-shadow: 0 0 0 4px rgba(198, 90, 32, 0.12);
+    }
+
+    .input-help {
+      margin-top: 6px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .error-text {
+      margin-top: 8px;
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: 600;
+      min-height: 18px;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: #fffaf5;
+      overflow: hidden;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .summary-main {
+      display: grid;
+      gap: 4px;
+    }
+
+    .summary-note {
+      font-size: 13px;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+
+    .chevron {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(198, 90, 32, 0.1);
+      display: grid;
+      place-items: center;
+      color: var(--brand-deep);
+      font-size: 16px;
+      transition: transform 0.18s ease;
+    }
+
+    details[open] .chevron {
+      transform: rotate(180deg);
+    }
+
+    .rules {
+      border-top: 1px solid rgba(217, 199, 178, 0.6);
+      padding: 0 16px 16px;
+    }
+
+    .rule {
+      padding: 12px 0;
+      border-bottom: 1px dashed rgba(217, 199, 178, 0.75);
+    }
+
+    .rule:last-child {
+      border-bottom: 0;
+      padding-bottom: 4px;
+    }
+
+    .rule strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .rule p,
+    .rule-footnote {
+      margin: 0;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .cta-note {
+      padding: 14px 16px;
+      border-radius: var(--radius-lg);
+      background: #fbf6f0;
+      border: 1px solid #eee2d4;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #5d4d3f;
+    }
+
+    .sticky-shell {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, rgba(247, 243, 238, 0) 0%, rgba(247, 243, 238, 0.96) 28%, rgba(247, 243, 238, 1) 100%);
+      pointer-events: none;
+    }
+
+    .sticky-bar {
+      max-width: 440px;
+      margin: 0 auto;
+      border-radius: 22px;
+      padding: 14px;
+      pointer-events: auto;
+    }
+
+    .sticky-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .sticky-title {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .sticky-value {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .deposit {
+      text-align: right;
+    }
+
+    .deposit .amount {
+      color: var(--brand-deep);
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .submit-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%);
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.99);
+    }
+
+    .submit-btn[disabled] {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      top: 18px;
+      transform: translateX(-50%) translateY(-16px);
+      width: min(400px, calc(100vw - 24px));
+      padding: 14px 16px;
+      border-radius: 18px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 10;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      border-color: rgba(47, 122, 76, 0.2);
+      background: rgba(237, 248, 241, 0.98);
+    }
+
+    .toast.error {
+      border-color: rgba(167, 62, 50, 0.18);
+      background: rgba(253, 236, 235, 0.98);
+    }
+
+    .toast strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .toast p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .success-card {
+      display: none;
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      margin-bottom: 14px;
+      background: linear-gradient(180deg, #f6fbf7 0%, #ffffff 100%);
+      border-color: rgba(47, 122, 76, 0.18);
+    }
+
+    .success-card.show {
+      display: block;
+    }
+
+    .success-card strong {
+      display: block;
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: var(--success);
+    }
+
+    .success-card p {
+      margin: 0 0 10px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .success-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    @media (min-width: 760px) {
+      body {
+        padding: 18px 0 32px;
+      }
+
+      .page {
+        max-width: 980px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.9fr;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .hero {
+        grid-column: 1 / -1;
+      }
+
+      .sticky-shell {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .sticky-bar {
+        max-width: 980px;
+      }
+
+      .date-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+      }
+
+      .time-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 359px) {
+      .date-grid,
+      .time-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sticky-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .deposit {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <div class="page">
+    <section class="hero">
+      <div class="hero-top">
+        <span class="eyebrow">P0 优化演示版</span>
+        <h1>老北京铜锅涮肉（国贸店）</h1>
+        <p class="hero-subtitle">先把用户最关心的几件事讲清楚：哪天可订、哪个时间更稳、定金怎么退、提交后谁来确认。</p>
+      </div>
+      <div class="hero-body">
+        <div class="chips">
+          <span class="chip">4.3 分 · 1,247 条评价</span>
+          <span class="chip">人均 ¥168</span>
+          <span class="chip">火锅 · 营业至 22:00</span>
+        </div>
+        <div class="meta-row">
+          <span>地址：北京市朝阳区建国门外大街1号国贸商城B1-23</span>
+          <span>电话：010-8888-6666</span>
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <section class="success-card" id="successCard">
+        <strong>预订申请已提交</strong>
+        <p id="successSummary">商家将尽快确认，结果会通过短信发送到您的手机号。</p>
+        <p>这是原型演示页，所以这里只模拟了提交结果提醒，没有接入真实支付与短信链路。</p>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>1. 选择日期</h2>
+            <p class="caption">展示近 6 天可订状态，默认选中最近可订的一天。</p>
+          </div>
+        </div>
+        <div class="date-grid" id="dateGrid"></div>
+        <div class="error-text" id="dateError"></div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>2. 选择时间</h2>
+            <p class="caption">午市和晚市分组展示，已满不可选，推荐与紧张都有文字标签。</p>
+          </div>
+        </div>
+        <div class="legend">
+          <span>可订</span>
+          <span>推荐</span>
+          <span>紧张</span>
+          <span>已满不可选</span>
+        </div>
+        <div id="timeGroups"></div>
+        <div class="error-text" id="timeError"></div>
+      </section>
+    </main>
+
+    <aside>
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>3. 用餐人与联系信息</h2>
+            <p class="caption">保留必要表单，但补上基础校验，避免点击后才发现信息不完整。</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="guests">用餐人数</label>
+          <select id="guests">
+            <option value="">请选择人数</option>
+            <option value="1">1人</option>
+            <option value="2">2人</option>
+            <option value="3">3人</option>
+            <option value="4">4人</option>
+            <option value="5">5人</option>
+            <option value="6">6人</option>
+            <option value="7">7人</option>
+            <option value="8">8人</option>
+            <option value="9">9人</option>
+            <option value="10">10人</option>
+          </select>
+          <div class="error-text" id="guestsError"></div>
+        </div>
+
+        <div class="field">
+          <label for="name">联系人姓名</label>
+          <input id="name" type="text" placeholder="请输入联系人姓名">
+          <div class="error-text" id="nameError"></div>
+        </div>
+
+        <div class="field">
+          <label for="phone">手机号</label>
+          <input id="phone" type="tel" inputmode="numeric" placeholder="用于接收确认结果短信">
+          <p class="input-help">演示页使用 11 位手机号格式校验。</p>
+          <div class="error-text" id="phoneError"></div>
+        </div>
+
+        <div class="field">
+          <label for="note">备注</label>
+          <input id="note" type="text" placeholder="如有特殊需求可填写，P0 阶段先保留自由输入">
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>4. 定金说明</h2>
+            <p class="caption">把支付前最容易犹豫的规则讲清楚，降低用户顾虑。</p>
+          </div>
+        </div>
+
+        <details open>
+          <summary>
+            <div class="summary-main">
+              <strong>定金 ¥50，到店消费可抵扣</strong>
+              <span class="summary-note">展开查看取消、退款、迟到和商家取消规则</span>
+            </div>
+            <span class="chevron">⌄</span>
+          </summary>
+          <div class="rules">
+            <div class="rule">
+              <strong>到店消费可抵扣</strong>
+              <p>按时到店并完成消费后，已支付定金可在结账时直接抵扣。</p>
+            </div>
+            <div class="rule">
+              <strong>提前取消可退款</strong>
+              <p>预订时间前 2 小时以上取消，可原路退回定金。</p>
+            </div>
+            <div class="rule">
+              <strong>迟到失效规则</strong>
+              <p>如超过预订时间 15 分钟仍未到店，餐位可能自动释放，定金不退。</p>
+            </div>
+            <div class="rule">
+              <strong>商家取消处理</strong>
+              <p>如因商家原因无法接待，定金将全额退回，并以短信通知您。</p>
+            </div>
+            <p class="rule-footnote">以上为原型模拟规则，用于演示“支付前规则透明化”的设计思路。</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <div>
+            <h2>5. 提交前说明</h2>
+            <p class="caption">在点击前先告诉用户后续流程，避免“点完不知道会发生什么”。</p>
+          </div>
+        </div>
+        <div class="cta-note">提交后由门店人工确认，确认结果将通过短信通知您；若当前时段库存紧张，我们会在提交时做一次兜底校验。</div>
+      </section>
+    </aside>
+  </div>
+
+  <div class="sticky-shell">
+    <div class="sticky-bar">
+      <div class="sticky-row">
+        <div>
+          <div class="sticky-title">当前预订信息</div>
+          <div class="sticky-value" id="bookingSummary">请选择日期、时间和人数</div>
+          <div class="summary-tags" id="summaryTags"></div>
+        </div>
+        <div class="deposit">
+          <div class="sticky-title">需支付定金</div>
+          <div class="amount">¥50</div>
+        </div>
+      </div>
+      <button class="submit-btn" id="submitBtn">支付 ¥50 定金并提交预订</button>
+    </div>
+  </div>
+
+  <script>
+    const weekdayMap = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+    const dateTemplates = [
+      {
+        hint: "午市可订充足",
+        lunch: [
+          { time: "11:30", status: "recommended", text: "推荐" },
+          { time: "12:00", status: "available", text: "可订" },
+          { time: "12:30", status: "tight", text: "紧张" }
+        ],
+        dinner: [
+          { time: "17:30", status: "recommended", text: "推荐" },
+          { time: "18:00", status: "available", text: "可订" },
+          { time: "18:30", status: "tight", text: "紧张" },
+          { time: "19:00", status: "full", text: "已满" }
+        ]
+      },
+      {
+        hint: "晚市更容易订到",
+        lunch: [
+          { time: "11:30", status: "available", text: "可订" },
+          { time: "12:00", status: "tight", text: "紧张" },
+          { time: "12:30", status: "full", text: "已满" }
+        ],
+        dinner: [
+          { time: "17:30", status: "recommended", text: "推荐" },
+          { time: "18:00", status: "recommended", text: "推荐" },
+          { time: "18:30", status: "available", text: "可订" },
+          { time: "19:30", status: "tight", text: "紧张" }
+        ]
+      },
+      {
+        hint: "晚市高峰较紧张",
+        lunch: [
+          { time: "11:30", status: "available", text: "可订" },
+          { time: "12:00", status: "recommended", text: "推荐" },
+          { time: "12:30", status: "available", text: "可订" }
+        ],
+        dinner: [
+          { time: "17:30", status: "available", text: "可订" },
+          { time: "18:00", status: "tight", text: "紧张" },
+          { time: "18:30", status: "tight", text: "紧张" },
+          { time: "19:00", status: "full", text: "已满" }
+        ]
+      },
+      {
+        hint: "周末晚市热度高",
+        lunch: [
+          { time: "11:30", status: "tight", text: "紧张" },
+          { time: "12:00", status: "available", text: "可订" },
+          { time: "12:30", status: "full", text: "已满" }
+        ],
+        dinner: [
+          { time: "17:30", status: "tight", text: "紧张" },
+          { time: "18:00", status: "recommended", text: "推荐" },
+          { time: "18:30", status: "full", text: "已满" },
+          { time: "19:30", status: "full", text: "已满" }
+        ]
+      },
+      {
+        hint: "可订但大桌有限",
+        lunch: [
+          { time: "11:30", status: "available", text: "可订" },
+          { time: "12:00", status: "available", text: "可订" },
+          { time: "12:30", status: "tight", text: "紧张" }
+        ],
+        dinner: [
+          { time: "17:30", status: "recommended", text: "推荐" },
+          { time: "18:00", status: "tight", text: "紧张" },
+          { time: "18:30", status: "available", text: "可订" },
+          { time: "19:00", status: "tight", text: "紧张" }
+        ]
+      },
+      {
+        hint: "仅部分时段可订",
+        lunch: [
+          { time: "11:30", status: "full", text: "已满" },
+          { time: "12:00", status: "tight", text: "紧张" },
+          { time: "12:30", status: "available", text: "可订" }
+        ],
+        dinner: [
+          { time: "17:30", status: "full", text: "已满" },
+          { time: "18:00", status: "available", text: "可订" },
+          { time: "18:30", status: "tight", text: "紧张" },
+          { time: "19:30", status: "full", text: "已满" }
+        ]
+      }
+    ];
+
+    const state = {
+      dates: [],
+      selectedDateIndex: 0,
+      selectedTime: "",
+      selectedStatus: ""
+    };
+
+    const dateGrid = document.getElementById("dateGrid");
+    const timeGroups = document.getElementById("timeGroups");
+    const summary = document.getElementById("bookingSummary");
+    const summaryTags = document.getElementById("summaryTags");
+    const successCard = document.getElementById("successCard");
+    const successSummary = document.getElementById("successSummary");
+    const submitBtn = document.getElementById("submitBtn");
+    const toast = document.getElementById("toast");
+
+    const fields = {
+      guests: document.getElementById("guests"),
+      name: document.getElementById("name"),
+      phone: document.getElementById("phone"),
+      note: document.getElementById("note")
+    };
+
+    const errors = {
+      date: document.getElementById("dateError"),
+      time: document.getElementById("timeError"),
+      guests: document.getElementById("guestsError"),
+      name: document.getElementById("nameError"),
+      phone: document.getElementById("phoneError")
+    };
+
+    function initDates() {
+      const now = new Date();
+      state.dates = dateTemplates.map((template, index) => {
+        const date = new Date(now);
+        date.setDate(now.getDate() + index);
+        return {
+          ...template,
+          id: index,
+          rawDate: date,
+          dateText: `${date.getMonth() + 1}/${date.getDate()}`,
+          weekday: weekdayMap[date.getDay()]
+        };
+      });
+
+      const firstAvailableIndex = state.dates.findIndex((item) =>
+        [...item.lunch, ...item.dinner].some((slot) => slot.status !== "full")
+      );
+
+      state.selectedDateIndex = firstAvailableIndex >= 0 ? firstAvailableIndex : 0;
+    }
+
+    function renderDates() {
+      dateGrid.innerHTML = state.dates.map((item, index) => {
+        const isSelected = index === state.selectedDateIndex;
+        return `
+          <button class="date-card ${isSelected ? "selected" : ""}" type="button" data-date-index="${index}">
+            <div class="date-weekday">${index === 0 ? "今天" : item.weekday}</div>
+            <div class="date-day">${item.dateText}</div>
+            <div class="date-hint">${item.hint}</div>
+          </button>
+        `;
+      }).join("");
+
+      document.querySelectorAll("[data-date-index]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.selectedDateIndex = Number(button.dataset.dateIndex);
+          state.selectedTime = "";
+          state.selectedStatus = "";
+          clearError("date");
+          clearError("time");
+          renderDates();
+          renderTimes();
+          updateSummary();
+        });
+      });
+    }
+
+    function getSelectedDate() {
+      return state.dates[state.selectedDateIndex];
+    }
+
+    function slotBadgeClass(status) {
+      return {
+        available: "badge-available",
+        recommended: "badge-recommended",
+        tight: "badge-tight",
+        full: "badge-full"
+      }[status];
+    }
+
+    function renderGroup(title, slots) {
+      const slotHtml = slots.length ? slots.map((slot) => {
+        const disabled = slot.status === "full";
+        const selected = state.selectedTime === slot.time;
+        return `
+          <button
+            class="time-slot ${selected ? "selected" : ""} ${disabled ? "disabled" : ""}"
+            type="button"
+            data-time="${slot.time}"
+            data-status="${slot.status}"
+            ${disabled ? "disabled" : ""}
+          >
+            <div class="slot-top">
+              <span class="slot-time">${slot.time}</span>
+              <span class="slot-badge ${slotBadgeClass(slot.status)}">${slot.text}</span>
+            </div>
+            <span class="status-text">${disabled ? "当前不可预订" : selected ? "已加入当前预订" : "点击选择该时段"}</span>
+          </button>
+        `;
+      }).join("") : `<p class="empty-text">当前暂无可展示时段</p>`;
+
+      return `
+        <div class="group">
+          <div class="group-top">
+            <h3 class="group-title">${title}</h3>
+            <span class="caption">${title === "午市" ? "适合工作日快约" : "适合聚餐高峰"}</span>
+          </div>
+          <div class="time-grid">${slotHtml}</div>
+        </div>
+      `;
+    }
+
+    function renderTimes() {
+      const selectedDate = getSelectedDate();
+      timeGroups.innerHTML = [
+        renderGroup("午市", selectedDate.lunch),
+        renderGroup("晚市", selectedDate.dinner)
+      ].join("");
+
+      document.querySelectorAll("[data-time]").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.selectedTime = button.dataset.time;
+          state.selectedStatus = button.dataset.status;
+          clearError("time");
+          renderTimes();
+          updateSummary();
+        });
+      });
+    }
+
+    function updateSummary() {
+      const selectedDate = getSelectedDate();
+      const guestText = fields.guests.value ? `${fields.guests.value}人` : "未选人数";
+      const dateText = selectedDate ? `${selectedDate.weekday} ${selectedDate.dateText}` : "未选日期";
+      const timeText = state.selectedTime || "未选时间";
+
+      summary.textContent = `${dateText} · ${timeText} · ${guestText}`;
+
+      const tags = [];
+      if (selectedDate) {
+        tags.push(selectedDate.hint);
+      }
+      if (state.selectedStatus) {
+        const labelMap = {
+          available: "当前时段可订",
+          recommended: "当前时段为推荐选择",
+          tight: "当前时段库存紧张"
+        };
+        tags.push(labelMap[state.selectedStatus]);
+      }
+
+      summaryTags.innerHTML = tags.map((item) => `<span class="summary-tag">${item}</span>`).join("");
+    }
+
+    function showToast(type, title, text) {
+      toast.className = `toast show ${type}`;
+      toast.innerHTML = `<strong>${title}</strong><p>${text}</p>`;
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => {
+        toast.className = "toast";
+      }, 2800);
+    }
+
+    function setError(key, message) {
+      errors[key].textContent = message;
+    }
+
+    function clearError(key) {
+      errors[key].textContent = "";
+    }
+
+    function clearAllErrors() {
+      Object.keys(errors).forEach((key) => clearError(key));
+    }
+
+    function validate() {
+      clearAllErrors();
+      let valid = true;
+
+      if (state.selectedDateIndex === null || state.selectedDateIndex === undefined) {
+        setError("date", "请选择用餐日期");
+        valid = false;
+      }
+
+      if (!state.selectedTime) {
+        setError("time", "请选择一个可预订时段");
+        valid = false;
+      }
+
+      if (!fields.guests.value) {
+        setError("guests", "请选择用餐人数");
+        valid = false;
+      }
+
+      if (!fields.name.value.trim()) {
+        setError("name", "请输入联系人姓名");
+        valid = false;
+      }
+
+      const phone = fields.phone.value.trim();
+      if (!phone) {
+        setError("phone", "请输入手机号");
+        valid = false;
+      } else if (!/^1\d{10}$/.test(phone)) {
+        setError("phone", "请输入正确的 11 位手机号");
+        valid = false;
+      }
+
+      if (!valid) {
+        showToast("error", "还有信息未完善", "请先补全日期、时间、人数和联系方式，再提交预订。");
+      }
+
+      return valid;
+    }
+
+    function handleSubmit() {
+      if (!validate()) {
+        return;
+      }
+
+      if (state.selectedStatus === "tight" && Number(fields.guests.value) >= 7) {
+        setError("time", "该紧张时段暂不支持 7 人及以上预订，请改选其他时间");
+        showToast("error", "当前时段刚刚变紧张", "为了模拟异常兜底，本次演示拦截了大桌高峰时段提交。");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "正在提交预订...";
+
+      window.setTimeout(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "支付 ¥50 定金并提交预订";
+        successCard.classList.add("show");
+        successSummary.textContent = `${fields.name.value.trim()}，您已提交 ${getSelectedDate().weekday}${getSelectedDate().dateText} ${state.selectedTime} 的 ${fields.guests.value} 人预订申请。商家将尽快确认，结果会短信通知到 ${fields.phone.value.trim()}。`;
+        showToast("success", "定金提交成功", "预订申请已发送给门店，结果会通过短信通知您。");
+        successCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 650);
+    }
+
+    fields.guests.addEventListener("change", () => {
+      clearError("guests");
+      updateSummary();
+    });
+
+    fields.name.addEventListener("input", () => clearError("name"));
+    fields.phone.addEventListener("input", () => clearError("phone"));
+    submitBtn.addEventListener("click", handleSubmit);
+
+    initDates();
+    renderDates();
+    renderTimes();
+    updateSummary();
+  </script>
+</body>
+</html>

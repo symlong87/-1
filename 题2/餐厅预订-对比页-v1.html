@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>餐厅预订页面对比 v1</title>
+  <style>
+    :root {
+      --bg: #f5efe7;
+      --card: rgba(255, 255, 255, 0.9);
+      --line: rgba(82, 56, 34, 0.12);
+      --text: #2f241a;
+      --muted: #756553;
+      --brand: #b4521e;
+      --brand-soft: #fff0e4;
+      --shadow: 0 16px 36px rgba(51, 33, 17, 0.08);
+      --radius-xl: 28px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(180, 82, 30, 0.12), transparent 24%),
+        linear-gradient(180deg, #faf6f0 0%, var(--bg) 100%);
+    }
+
+    .page {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+
+    .hero,
+    .panel,
+    .frame {
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero {
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      margin-bottom: 18px;
+      display: grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+      margin-bottom: 12px;
+    }
+
+    .lead {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 15px;
+      max-width: 740px;
+    }
+
+    .panel {
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .panel h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    .panel ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .frame {
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+    }
+
+    .frame-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .frame-title {
+      display: grid;
+      gap: 4px;
+    }
+
+    .frame-title h3 {
+      font-size: 18px;
+    }
+
+    .frame-title p,
+    .frame-links a,
+    .panel p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .frame-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .frame-links a {
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: #f8f3ee;
+      border: 1px solid #ebe0d4;
+    }
+
+    iframe {
+      width: 100%;
+      height: 820px;
+      border: 0;
+      background: #fff;
+    }
+
+    .notes {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .note {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(82, 56, 34, 0.08);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+
+    .note strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .note p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 1080px) {
+      .hero,
+      .workspace,
+      .notes {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">餐厅预订 P0 对比页</span>
+        <h1>把“原始登记表”与“P0 优化版预订页”放到同一页里看</h1>
+        <p class="lead">这个页面用于面试讲解时快速对比前后差异。左侧保留原始版本，右侧是基于 `餐厅预订-P0优化指导-v1.md` 落地的优化版，重点观察日期选择、时间状态、定金透明度、提交预期和异常兜底五个模块。</p>
+      </div>
+      <aside class="panel">
+        <h2>本次对比重点</h2>
+        <ul>
+          <li>日期从原生输入框改成可快速浏览的近日期卡片。</li>
+          <li>时间按午市和晚市分组，区分可订、推荐、紧张、已满。</li>
+          <li>定金信息从一句话升级为规则说明模块。</li>
+          <li>CTA 明确表达“支付定金并提交预订”。</li>
+          <li>补上提交前说明、必填校验与异常提示。</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="workspace">
+      <article class="frame">
+        <div class="frame-head">
+          <div class="frame-title">
+            <h3>原始版</h3>
+            <p>更像基础表单，缺少状态感和支付前解释。</p>
+          </div>
+          <div class="frame-links">
+            <a href="./餐厅预订-原始版.html" target="_blank" rel="noopener noreferrer">单独打开</a>
+          </div>
+        </div>
+        <iframe src="./餐厅预订-原始版.html" title="餐厅预订原始版"></iframe>
+      </article>
+
+      <article class="frame">
+        <div class="frame-head">
+          <div class="frame-title">
+            <h3>优化版 v1</h3>
+            <p>聚焦 P0 成交链路，补齐可订感、信任感和提交预期。</p>
+          </div>
+          <div class="frame-links">
+            <a href="./餐厅预订-优化版-v1.html" target="_blank" rel="noopener noreferrer">单独打开</a>
+          </div>
+        </div>
+        <iframe src="./餐厅预订-优化版-v1.html" title="餐厅预订优化版"></iframe>
+      </article>
+    </section>
+
+    <section class="notes">
+      <article class="note">
+        <strong>日期选择</strong>
+        <p>用户进入页面后不用再打开系统日历，也能直接比较最近几天的可订情况。</p>
+      </article>
+      <article class="note">
+        <strong>时间状态</strong>
+        <p>可订、推荐、紧张、已满都能被一眼识别，已满时段不可点。</p>
+      </article>
+      <article class="note">
+        <strong>支付信任</strong>
+        <p>定金不再只有一句话，而是把退款、迟到和商家取消规则讲清楚。</p>
+      </article>
+      <article class="note">
+        <strong>CTA 真实动作</strong>
+        <p>按钮不再模糊写“确认预订”，而是直接表达“支付 ¥50 定金并提交预订”。</p>
+      </article>
+      <article class="note">
+        <strong>异常兜底</strong>
+        <p>补了基础校验和紧张时段的大桌拦截，用来演示链路完整性。</p>
+      </article>
+    </section>
+  </div>
+</body>
+</html>
